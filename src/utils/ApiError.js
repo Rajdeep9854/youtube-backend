@@ -7,7 +7,7 @@ class ApiError extends Error {
 
 
     ) {
-        super(message);
+        super(); // super(message);
         this.statusCode = statusCode;
         this.data = null;// study about it 
         this.message = message;

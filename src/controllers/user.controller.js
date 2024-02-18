@@ -18,32 +18,50 @@ const registerUser = asyncHandler(async (req, res) => {
     // return response 
 
     const { fullName, email, username, password } = req.body
-    // if (fullName === "") {
-    //     throw new ApiError(400, "full name required")
-    // }
+
 
     if ([fullName, email, username, password]
         .some((field) => {
             return field?.trim() === ""
         })
     ) {
-        throw new ApiError(400, "all fields are required")
+        //throw new ApiError(400, "all fields are required")
+        return res.status(400).json(new ApiError(400, "all fields are required"))
     }
 
 
-    const existedUser = User.findOne({
+    const existedUser = await User.findOne({
         $or: [{ username: username }, { email: email }]
     })
     if (existedUser) {
-        throw new ApiError(409, "User with email or username already exists")
+        //throw  new ApiError(409, "User with email or username already exists")
+        //console.log(new ApiError(400,"user with email does not exists"));
+
+        return res.status(409).json(new ApiError(409, "User with email or username already exists"))
     }
 
 
-    const avatarLocalPath = req.files?.avatar[0]?.path;
-    const coverImagePath = req.files?.coverImage[0]?.path;
+    //const avatarLocalPath = req.files?.avatar[0]?.path;
+    //const coverImagePath = req.files?.coverImage[0]?.path;
+
+    let coverImagePath;
+    let avatarLocalPath;
+    if (req.files
+        && Array.isArray(req.files.coverImage)
+        && req.files.coverImage.length > 0) {
+        coverImagePath = req.files.coverImage[0].path
+
+    }
+
+    if (req.files
+        && Array.isArray(req.files.avatar)
+        && req.files.avatar.length > 0) {
+        avatarLocalPath = req.files.avatar[0].path
+    }
 
     if (!avatarLocalPath) {
-        throw new ApiError(400, "avatar file is required")
+        //throw new ApiError(400, "avatar file is required")
+        return res.status(400).json(new ApiError(400, "avatar image required"))
     }
 
     const avatar = await uploadOnCloudinary(avatarLocalPath)
